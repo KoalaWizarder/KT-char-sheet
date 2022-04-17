@@ -13,11 +13,11 @@ using namespace std;
 //STATS**************************************
 int basStr = 18, basDex = 10, basCon = 16, basInt = 14, basWis = 14, basCha = 14;
 int enhStr = 4, enhDex = 0, enhCon = 2, enhInt = 0, enhWis = 0, enhCha = 2;
-int modStr = ((basStr + enhStr) - 10) / 2, modDex = ((basDex + enhDex) - 10) / 2, modCon = ((basCon + enhCon) - 10) / 2;
-int modInt = ((basInt + enhInt) - 10) / 2, modWis = ((basWis + enhWis) - 10) / 2, modCha = ((basCha + enhCha) - 10) / 2;
 int bab = 12, CLpal = 9, CLwiz = 14, lvl = 14, pal = 13, wiz = 1;
 int currHP = 170, maxHP = 116 + (lvl * modCon) + lvl;
 //*******************************************
+int modStr = ((basStr + enhStr) - 10) / 2, modDex = ((basDex + enhDex) - 10) / 2, modCon = ((basCon + enhCon) - 10) / 2;
+int modInt = ((basInt + enhInt) - 10) / 2, modWis = ((basWis + enhWis) - 10) / 2, modCha = ((basCha + enhCha) - 10) / 2;
 
 bool userInLoop(string title)
 {
