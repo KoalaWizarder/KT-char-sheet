@@ -1,0 +1,21 @@
+Total-Level: 14
+Class-0-Name: Wizard (Conjurer)
+Class-0-Level: 1
+Class-1-Name: Paladin (Mystic Fire Knight)
+Class-1-Level: 13
+Class-2-Name:
+Class-2-Level: 0
+Class-3-Name:
+Class-3-Level: 0
+Class-4-Name:
+Class-4-Level: 0
+Class-5-Name:
+Class-5-Level: 0
+Class-6-Name:
+Class-6-Level: 0
+Class-7-Name:
+Class-7-Level: 0
+Class-8-Name:
+Class-8-Level: 0
+Class-9-Name:
+Class-9-Level: 0

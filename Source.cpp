@@ -1,23 +1,31 @@
+
 #include <iostream>
 #include <string>
 #include <stdlib.h>
 #include <time.h>
 #include <iomanip>
 #include <random>
-#include <windows.h>
+// #include <windows.h>
 #include <chrono>
 #include <thread>
+#include <fstream>
+#include <locale>
+#include "stats.hpp"
+//#include "stats1.h"
 
 using namespace std;
 
+//need to do away with 'total level' in levels.txt and instead create a file reader that does the calculations
+
+
 //STATS**************************************
-int basStr = 18, basDex = 10, basCon = 16, basInt = 14, basWis = 14, basCha = 14;
-int enhStr = 4, enhDex = 0, enhCon = 2, enhInt = 0, enhWis = 0, enhCha = 2;
+//int basStr = 18, basDex = 10, basCon = 16, basInt = 14, basWis = 14, basCha = 14;
+//int enhStr = 4, enhDex = 2, enhCon = 2, enhInt = 0, enhWis = 0, enhCha = 2;
+//int modStr = ((basStr + enhStr) - 10) / 2, modDex = ((basDex + enhDex) - 10) / 2, modCon = ((basCon + enhCon) - 10) / 2;
+//int modInt = ((basInt + enhInt) - 10) / 2, modWis = ((basWis + enhWis) - 10) / 2, modCha = ((basCha + enhCha) - 10) / 2;
 int bab = 12, CLpal = 9, CLwiz = 14, lvl = 14, pal = 13, wiz = 1;
-int currHP = 170, maxHP = 116 + (lvl * modCon) + lvl;
+int currHP = 170, maxHP = 116 + /*(lvl * modCon)*/ +lvl;
 //*******************************************
-int modStr = ((basStr + enhStr) - 10) / 2, modDex = ((basDex + enhDex) - 10) / 2, modCon = ((basCon + enhCon) - 10) / 2;
-int modInt = ((basInt + enhInt) - 10) / 2, modWis = ((basWis + enhWis) - 10) / 2, modCha = ((basCha + enhCha) - 10) / 2;
 
 bool userInLoop(string title)
 {
@@ -43,6 +51,53 @@ bool isNumber(const string& s) {
 			return false;
 	}
 	return true;
+}
+void tokenize(string s, string del = " ")
+{
+	int start = 0;
+	int end = s.find(del);
+	while (end != -1) {
+		cout << s.substr(start, end - start) << endl;
+		start = end + del.size();
+		end = s.find(del, start);
+	}
+	cout << s.substr(start, end - start);
+}
+
+int split(string& str, char del) {
+	// declaring temp string to store the curr "word" upto del
+	string temp1 = "", temp2;
+
+	for (int i = 0; i < (int)str.size(); i++) {
+		// If cur char is not del, then append it to the cur "word", otherwise
+		  // you have completed the word, print it, and start a new word.
+		if (str[i] != del) {
+			temp1 += str[i];
+		}
+		else {
+			temp2 = temp1;
+			temp1 = "";
+		}
+	}
+	str = temp2; //temp1 = SCORE/////temp2 = TYPE
+	return stoi(temp1);
+}
+
+void statGen(character& name) {
+	ifstream infile;
+	infile.open("stats.txt");
+	for (int i = 0; i < 6; i++) {
+		string temp1, temp2;
+		int total = 0;
+		getline(infile, temp1);
+		for (int j = 0; j < 17; j++) {
+			string num1;
+			getline(infile, temp2, ':');
+			getline(infile, num1);
+			name.setStat(i, temp2, stoi(num1));
+		}
+	}
+	infile.close();
 }
 
 //dice
@@ -169,7 +224,7 @@ bool lightWeaponF() {
 	else if (userIn == "")
 		return false;
 }
-bool fullAttkF(){
+bool fullAttkF() {
 	system("CLS");
 	string userIn;
 	cout << "Is this a Full Attack?\n";
@@ -208,7 +263,7 @@ int enhBF() {
 			cout << "Enhancement Bonus?\n" << "Can leave blank if none: ";
 	}
 }
-int critF(){
+int critF() {
 	system("CLS");
 	cout << "What is the critical threshold for this weapon?\n";
 	cout << "Can leave blank if only threatens on 20: ";
@@ -266,13 +321,13 @@ bool offHandF() {
 	else if (userIn == "")
 		return false;
 }
-int weaponDMG(string &base, int size = 0) {
+int weaponDMG(string& base, int size = 0) {
 	if (base == "1d2") {
-		switch(size) {
+		switch (size) {
 		case 8: //FINE
 		case 4: //DIMINUTIVE
 		case 2: //TINY
-			base = "0"; 
+			base = "0";
 			return 0;
 		case 1: //SMALL
 			base = "1";
@@ -553,7 +608,7 @@ int weaponDMG(string &base, int size = 0) {
 
 
 //Power Attack Functions
-int pwrAttkF(){
+int pwrAttkF() {
 	system("CLS");
 	cout << "Power Attack? (MAX:" << bab << ")\n" << "Type in the penalty to the attack roll without(-): ";
 	string userIn;
@@ -566,20 +621,20 @@ int pwrAttkF(){
 			x = stoi(userIn);
 			if (x >= 0 && x <= bab)
 				return x;
-			else 
+			else
 				cout << "Please enter a valid number between 0 and " << bab << ": ";
 		}
-		else 
+		else
 			cout << "Please enter a valid number between 0 and " << bab << ": ";
 	}
 }
-int pwrDmg1F(int pen){
+int pwrDmg1F(int pen) {
 	return pen;
 }
-int pwrDmgLF(int pen){
+int pwrDmgLF(int pen) {
 	return pen * 0.5;
 }
-int pwrDmg2F(int pen){
+int pwrDmg2F(int pen) {
 	return pen * 2;
 }
 int pwrDmgChoiceF(int pen, int hands) {
@@ -611,7 +666,7 @@ int chargeF() {
 	cout << "Are you charging?\n";
 	return userInLoop("Charging?") * 2;
 }
-int flankF(){
+int flankF() {
 	system("CLS");
 	cout << "Are you flanking?\n";
 	return userInLoop("Flanking?") * 2;
@@ -709,7 +764,7 @@ int armbandsF(int pwrAttk) {
 }
 
 //Weapon Macros
-void sharrash(string dmg = "1d10", int hands = 2, int enh = 2, int crit = 17, int mult = 4, bool light = false) {
+void sharrash(character& name, string dmg = "1d10", int hands = 2, int enh = 2, int crit = 17, int mult = 4, bool light = false) {
 	bool toggle = true;
 	if (light == true) {
 		hands = 1;
@@ -728,7 +783,7 @@ void sharrash(string dmg = "1d10", int hands = 2, int enh = 2, int crit = 17, in
 		string damage = dmg;
 		for (int i = 0; i < 25; i++) {
 			DR[i] = weaponDMG(damage, size);
-			if (i < 39)
+			if (i < 24)
 				damage = dmg;
 		}
 		int cc[5] = { 0, 0, 0, 0, 0 }, cd[5] = { 0, 0, 0, 0, 0 };
@@ -742,7 +797,7 @@ void sharrash(string dmg = "1d10", int hands = 2, int enh = 2, int crit = 17, in
 		else
 			fullAttk = fullAttkF();
 		int haste = hasteF();
-		int smtAttk[5] = { smiteAttkF("1"), 0, 0, 0, 0};
+		int smtAttk[5] = { smiteAttkF("1"), 0, 0, 0, 0 };
 		if (fullAttk == true) {
 			if (bab >= 5)
 				smtAttk[1] = smiteAttkF("2");
@@ -762,70 +817,70 @@ void sharrash(string dmg = "1d10", int hands = 2, int enh = 2, int crit = 17, in
 		int rubicond = rubicondF();
 		int armbands = armbandsF(pwrAttk);
 		int critR[25];
-		int a = bab + modStr + size + enh + flank - pwrAttk + oneMind + divFavor + haste + prayer + xtraAttk;
+		int a = bab + name.getMod(0) + size + enh + flank - pwrAttk + oneMind + divFavor + haste + prayer + xtraAttk;
 		int d = enh + pwrDmg + oneMind + divFavor + prayer + armbands + rubicond + xtraDmg;
 		if (hands == 1) {
 			if (light == true && offHandF() == true) {
-				d += (int)modStr * .5;
+				d += (int)name.getMod(0) * .5;
 			}
 			else
-				d += modStr;
+				d += name.getMod(0);
 		}
 		else if (hands == 2)
-			d += ((int)modStr * 1.5);
+			d += ((int)name.getMod(0) * 1.5);
 		int A[5], D[5];
 		//ATTACK ONE vvvv
 		int di = 5, critI = 0;
 		A[0] = AR[0] + a + (smtAttk[0] * pal) + charge;
-		D[0] = DR[0] + d + (smtAttk[0] * modCha) + divSac + (rhinoRush * ((DR[di++] + d) + (smtAttk[0] * modCha))) + //Rhino Rush = DR[5]
-			(spiritChg * ((DR[di++] + d) + (smtAttk[0] * modCha))) + //Spirited Charge = DR[6]
-			(valor * ((DR[di++] + d) + (smtAttk[0] * modCha))); //Valorous = DR[7]
+		D[0] = DR[0] + d + (smtAttk[0] * name.getMod(5)) + divSac + (rhinoRush * ((DR[di++] + d) + (smtAttk[0] * name.getMod(5)))) + //Rhino Rush = DR[5]
+			(spiritChg * ((DR[di++] + d) + (smtAttk[0] * name.getMod(5)))) + //Spirited Charge = DR[6]
+			(valor * ((DR[di++] + d) + (smtAttk[0] * name.getMod(5)))); //Valorous = DR[7]
 		if (AR[0] >= crit) {
 			cc[0] = AR[5] + a + (smtAttk[0] * pal) + charge;
 			for (int x = 1; x <= mult - 1; x++) {
-				cd[0] += DR[di] + d + (smtAttk[0] * modCha);
+				cd[0] += DR[di] + d + (smtAttk[0] * name.getMod(5));
 				critR[critI++] = DR[di++];
 			}
 		}
 		if (fullAttk == true) {
 			//ATTACK TWO vvvv
 			A[1] = AR[1] + a + (smtAttk[1] * pal) - 5;
-			D[1] = DR[1] + d + (smtAttk[1] * modCha);
+			D[1] = DR[1] + d + (smtAttk[1] * name.getMod(5));
 			if (AR[1] >= crit) {
 				cc[1] = AR[6] + a + (smtAttk[1] * pal) - 5;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd[1] += DR[di] + d + (smtAttk[1] * modCha);
+					cd[1] += DR[di] + d + (smtAttk[1] * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			//ATTACK THREE vvvv
 			A[2] = AR[2] + a + (smtAttk[2] * pal) - 10;
-			D[2] = DR[2] + d + (smtAttk[2] * modCha);
+			D[2] = DR[2] + d + (smtAttk[2] * name.getMod(5));
 			if (AR[2] >= crit) {
 				cc[2] = AR[7] + a + (smtAttk[2] * pal) - 10;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd[2] += DR[di] + d + (smtAttk[2] * modCha);
+					cd[2] += DR[di] + d + (smtAttk[2] * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			//ATTACK FOUR vvvv
 			A[3] = AR[3] + a + (smtAttk[3] * pal) - 15;
-			D[3] = DR[3] + d + (smtAttk[3] * modCha);
+			D[3] = DR[3] + d + (smtAttk[3] * name.getMod(5));
 			if (AR[3] >= crit) {
 				cc[3] = AR[8] + a + (smtAttk[3] * pal) - 15;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd[3] += DR[di] + d + (smtAttk[3] * modCha);
+					cd[3] += DR[di] + d + (smtAttk[3] * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			if (haste == 1) {
 				//ATTACK HASTE vvvv
 				A[4] = AR[4] + a + (smtAttk[4] * pal);
-				D[4] = DR[4] + d + (smtAttk[4] * modCha);
+				D[4] = DR[4] + d + (smtAttk[4] * name.getMod(5));
 				if (AR[4] >= crit) {
 					cc[4] = AR[9] + a + (smtAttk[4] * pal);
 					for (int x = 1; x <= mult - 1; x++) {
-						cd[4] += DR[di] + d + (smtAttk[4] * modCha);
+						cd[4] += DR[di] + d + (smtAttk[4] * name.getMod(5));
 						critR[critI++] = DR[di++];
 					}
 				}
@@ -912,14 +967,14 @@ void sharrash(string dmg = "1d10", int hands = 2, int enh = 2, int crit = 17, in
 				cout << '\n';
 			}
 		}
-		cout << setfill('*') << setw(45) << '\n';
+		cout << setfill('*') << setw(45) << '\n' << setfill(' ');
 		setfill(' ');
 		//ATTACK/DAMAGE OUTPUT EQUATIONS vvvv 
 		cout << "-Attack: " << a << " {";
 		if (bab != 0)
 			cout << bab << "[BAB]";
-		if (modStr != 0)
-			cout << " + " << modStr << "[STR]";
+		if (name.getMod(0) != 0)
+			cout << " + " << name.getMod(0) << "[STR]";
 		if (size != 0)
 			cout << " + " << size << "[SIZE]";
 		if (enh != 0)
@@ -956,13 +1011,13 @@ void sharrash(string dmg = "1d10", int hands = 2, int enh = 2, int crit = 17, in
 		cout << '\n';
 
 		cout << "-Damage: " << d << " {";
-		if (modStr != 0) {
+		if (name.getMod(0) != 0) {
 			switch (hands) {
 			case 1:
-				cout << modStr;
+				cout << name.getMod(0);
 				break;
 			case 2:
-				cout << ((int)modStr * 1.5);
+				cout << (int)(name.getMod(0) * 1.5);
 				break;
 			}
 			cout << "[STR]";
@@ -987,23 +1042,23 @@ void sharrash(string dmg = "1d10", int hands = 2, int enh = 2, int crit = 17, in
 
 		cout << "-Cond. DMG Bonuses: ";
 		if (smtAttk[0] != 0)
-			cout << '+' << modCha << "[SMT1]";
+			cout << '+' << name.getMod(5) << "[SMT1]";
 		if (smtAttk[1] != 0)
-			cout << "//" << '+' << modCha << "[SMT2]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT2]";
 		if (smtAttk[2] != 0)
-			cout << "//" << '+' << modCha << "[SMT3]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT3]";
 		if (smtAttk[3] != 0)
-			cout << "//" << '+' << modCha << "[SMT4]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT4]";
 		if (smtAttk[4] != 0)
-			cout << "//" << '+' << modCha << "[SMT-H]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT-H]";
 		if (divSac != 0)
 			cout << "//" << '+' << divSac << "[DivSac]";
 		if (rhinoRush != 0)
-			cout << "//" << '+' << (rhinoRush * ((DR[5] + d) + (smtAttk[0] * modCha))) << "(" << setw(2) << DR[5] << ")[RHINO]";
+			cout << "//" << '+' << (rhinoRush * ((DR[5] + d) + (smtAttk[0] * name.getMod(5)))) << "(" << setw(2) << DR[5] << ")[RHINO]";
 		if (spiritChg != 0)
-			cout << "//" << '+' << (spiritChg * ((DR[6] + d) + (smtAttk[0] * modCha))) << "(" << setw(2) << DR[6] << ")[SprtCHRG]";
+			cout << "//" << '+' << (spiritChg * ((DR[6] + d) + (smtAttk[0] * name.getMod(5)))) << "(" << setw(2) << DR[6] << ")[SprtCHRG]";
 		if (valor != 0)
-			cout << "//" << '+' << (valor * ((DR[7] + d) + (smtAttk[0] * modCha))) << "(" << setw(2) << DR[7] << ")[VALOR]";
+			cout << "//" << '+' << (valor * ((DR[7] + d) + (smtAttk[0] * name.getMod(5)))) << "(" << setw(2) << DR[7] << ")[VALOR]";
 		cout << '\n';
 
 		cout << "-WEAPON DAMAGE: " << damage << '\n';
@@ -1024,7 +1079,7 @@ void sharrash(string dmg = "1d10", int hands = 2, int enh = 2, int crit = 17, in
 		toggle = userInLoop("Attack Again?");
 	}
 }
-void waraxe(string dmg = "1d10", int hands = 0, int enh = 2, int crit = 20, int mult = 3, bool light = false) {
+void waraxe(character& name, string dmg = "1d10", int hands = 0, int enh = 2, int crit = 20, int mult = 3, bool light = false) {
 	bool toggle = true;
 	if (light == true) {
 		hands = 1;
@@ -1077,70 +1132,70 @@ void waraxe(string dmg = "1d10", int hands = 0, int enh = 2, int crit = 20, int 
 		int rubicond = rubicondF();
 		int armbands = armbandsF(pwrAttk);
 		int critR[25];
-		int a = bab + modStr + size + enh + flank - pwrAttk + oneMind + divFavor + haste + prayer + xtraAttk;
+		int a = bab + name.getMod(0) + size + enh + flank - pwrAttk + oneMind + divFavor + haste + prayer + xtraAttk;
 		int d = enh + pwrDmg + oneMind + divFavor + prayer + armbands + rubicond + xtraDmg;
 		if (hands == 1) {
 			if (light == true && offHandF() == true) {
-				d += (int)modStr * .5;
+				d += (int)name.getMod(0) * .5;
 			}
 			else
-				d += modStr;
+				d += name.getMod(0);
 		}
 		else if (hands == 2)
-			d += ((int)modStr * 1.5);
+			d += ((int)name.getMod(0) * 1.5);
 		int A[5], D[5];
 		//ATTACK ONE vvvv
 		int di = 5, critI = 0;
 		A[0] = AR[0] + a + (smtAttk[0] * pal) + charge;
-		D[0] = DR[0] + d + (smtAttk[0] * modCha) + divSac + (rhinoRush * ((DR[di++] + d) + (smtAttk[0] * modCha))) + //Rhino Rush = DR[5]
-			(spiritChg * ((DR[di++] + d) + (smtAttk[0] * modCha))) + //Spirited Charge = DR[6]
-			(valor * ((DR[di++] + d) + (smtAttk[0] * modCha))); //Valorous = DR[7]
+		D[0] = DR[0] + d + (smtAttk[0] * name.getMod(5)) + divSac + (rhinoRush * ((DR[di++] + d) + (smtAttk[0] * name.getMod(5)))) + //Rhino Rush = DR[5]
+			(spiritChg * ((DR[di++] + d) + (smtAttk[0] * name.getMod(5)))) + //Spirited Charge = DR[6]
+			(valor * ((DR[di++] + d) + (smtAttk[0] * name.getMod(5)))); //Valorous = DR[7]
 		if (AR[0] >= crit) {
 			cc[0] = AR[5] + a + (smtAttk[0] * pal) + charge;
 			for (int x = 1; x <= mult - 1; x++) {
-				cd[0] += DR[di] + d + (smtAttk[0] * modCha);
+				cd[0] += DR[di] + d + (smtAttk[0] * name.getMod(5));
 				critR[critI++] = DR[di++];
 			}
 		}
 		if (fullAttk == true) {
 			//ATTACK TWO vvvv
 			A[1] = AR[1] + a + (smtAttk[1] * pal) - 5;
-			D[1] = DR[1] + d + (smtAttk[1] * modCha);
+			D[1] = DR[1] + d + (smtAttk[1] * name.getMod(5));
 			if (AR[1] >= crit) {
 				cc[1] = AR[6] + a + (smtAttk[1] * pal) - 5;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd[1] += DR[di] + d + (smtAttk[1] * modCha);
+					cd[1] += DR[di] + d + (smtAttk[1] * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			//ATTACK THREE vvvv
 			A[2] = AR[2] + a + (smtAttk[2] * pal) - 10;
-			D[2] = DR[2] + d + (smtAttk[2] * modCha);
+			D[2] = DR[2] + d + (smtAttk[2] * name.getMod(5));
 			if (AR[2] >= crit) {
 				cc[2] = AR[7] + a + (smtAttk[2] * pal) - 10;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd[2] += DR[di] + d + (smtAttk[2] * modCha);
+					cd[2] += DR[di] + d + (smtAttk[2] * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			//ATTACK FOUR vvvv
 			A[3] = AR[3] + a + (smtAttk[3] * pal) - 15;
-			D[3] = DR[3] + d + (smtAttk[3] * modCha);
+			D[3] = DR[3] + d + (smtAttk[3] * name.getMod(5));
 			if (AR[3] >= crit) {
 				cc[3] = AR[8] + a + (smtAttk[3] * pal) - 15;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd[3] += DR[di] + d + (smtAttk[3] * modCha);
+					cd[3] += DR[di] + d + (smtAttk[3] * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			if (haste == 1) {
 				//ATTACK HASTE vvvv
 				A[4] = AR[4] + a + (smtAttk[4] * pal);
-				D[4] = DR[4] + d + (smtAttk[4] * modCha);
+				D[4] = DR[4] + d + (smtAttk[4] * name.getMod(5));
 				if (AR[4] >= crit) {
 					cc[4] = AR[9] + a + (smtAttk[4] * pal);
 					for (int x = 1; x <= mult - 1; x++) {
-						cd[4] += DR[di] + d + (smtAttk[4] * modCha);
+						cd[4] += DR[di] + d + (smtAttk[4] * name.getMod(5));
 						critR[critI++] = DR[di++];
 					}
 				}
@@ -1227,14 +1282,13 @@ void waraxe(string dmg = "1d10", int hands = 0, int enh = 2, int crit = 20, int 
 				cout << '\n';
 			}
 		}
-		cout << setfill('*') << setw(45) << '\n';
-		setfill(' ');
+		cout << setfill('*') << setw(45) << '\n' << setfill(' ');
 		//ATTACK/DAMAGE OUTPUT EQUATIONS vvvv 
 		cout << "-Attack: " << a << " {";
 		if (bab != 0)
 			cout << bab << "[BAB]";
-		if (modStr != 0)
-			cout << " + " << modStr << "[STR]";
+		if (name.getMod(0) != 0)
+			cout << " + " << name.getMod(0) << "[STR]";
 		if (size != 0)
 			cout << " + " << size << "[SIZE]";
 		if (enh != 0)
@@ -1271,13 +1325,13 @@ void waraxe(string dmg = "1d10", int hands = 0, int enh = 2, int crit = 20, int 
 		cout << '\n';
 
 		cout << "-Damage: " << d << " {";
-		if (modStr != 0) {
+		if (name.getMod(0) != 0) {
 			switch (hands) {
 			case 1:
-				cout << modStr;
+				cout << name.getMod(0);
 				break;
 			case 2:
-				cout << ((int)modStr * 1.5);
+				cout << (int)(name.getMod(0) * 1.5);
 				break;
 			}
 			cout << "[STR]";
@@ -1302,23 +1356,23 @@ void waraxe(string dmg = "1d10", int hands = 0, int enh = 2, int crit = 20, int 
 
 		cout << "-Cond. DMG Bonuses: ";
 		if (smtAttk[0] != 0)
-			cout << '+' << modCha << "[SMT1]";
+			cout << '+' << name.getMod(5) << "[SMT1]";
 		if (smtAttk[1] != 0)
-			cout << "//" << '+' << modCha << "[SMT2]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT2]";
 		if (smtAttk[2] != 0)
-			cout << "//" << '+' << modCha << "[SMT3]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT3]";
 		if (smtAttk[3] != 0)
-			cout << "//" << '+' << modCha << "[SMT4]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT4]";
 		if (smtAttk[4] != 0)
-			cout << "//" << '+' << modCha << "[SMT-H]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT-H]";
 		if (divSac != 0)
 			cout << "//" << '+' << divSac << "[DivSac]";
 		if (rhinoRush != 0)
-			cout << "//" << '+' << (rhinoRush * ((DR[5] + d) + (smtAttk[0] * modCha))) << "(" << setw(2) << DR[5] << ")[RHINO]";
+			cout << "//" << '+' << (rhinoRush * ((DR[5] + d) + (smtAttk[0] * name.getMod(5)))) << "(" << setw(2) << DR[5] << ")[RHINO]";
 		if (spiritChg != 0)
-			cout << "//" << '+' << (spiritChg * ((DR[6] + d) + (smtAttk[0] * modCha))) << "(" << setw(2) << DR[6] << ")[SprtCHRG]";
+			cout << "//" << '+' << (spiritChg * ((DR[6] + d) + (smtAttk[0] * name.getMod(5)))) << "(" << setw(2) << DR[6] << ")[SprtCHRG]";
 		if (valor != 0)
-			cout << "//" << '+' << (valor * ((DR[7] + d) + (smtAttk[0] * modCha))) << "(" << setw(2) << DR[7] << ")[VALOR]";
+			cout << "//" << '+' << (valor * ((DR[7] + d) + (smtAttk[0] * name.getMod(5)))) << "(" << setw(2) << DR[7] << ")[VALOR]";
 		cout << '\n';
 
 		cout << "-WEAPON DAMAGE: " << damage << '\n';
@@ -1339,7 +1393,7 @@ void waraxe(string dmg = "1d10", int hands = 0, int enh = 2, int crit = 20, int 
 		toggle = userInLoop("Attack Again?");
 	}
 }
-void swordbow(string dmg = "2d6", int hands = 2, int enh = 1, int crit = 19, int mult = 2, bool light = false) {
+void swordbow(character& name, string dmg = "2d6", int hands = 2, int enh = 1, int crit = 19, int mult = 2, bool light = false) {
 	bool toggle = true;
 	if (light == true) {
 		hands = 1;
@@ -1349,6 +1403,7 @@ void swordbow(string dmg = "2d6", int hands = 2, int enh = 1, int crit = 19, int
 	}
 	int size = sizeF();
 	while (toggle) {
+		setfill(' ');
 		//ATTACK ROLLS vvvv
 		int AR[25], DR[40];
 		for (int i = 0; i < 25; i++) {
@@ -1392,70 +1447,70 @@ void swordbow(string dmg = "2d6", int hands = 2, int enh = 1, int crit = 19, int
 		int rubicond = rubicondF();
 		int armbands = armbandsF(pwrAttk);
 		int critR[25];
-		int a = bab + modStr + size + enh + flank - pwrAttk + oneMind + divFavor + haste + prayer + xtraAttk;
+		int a = bab + name.getMod(0) + size + enh + flank - pwrAttk + oneMind + divFavor + haste + prayer + xtraAttk;
 		int d = enh + pwrDmg + oneMind + divFavor + prayer + armbands + rubicond + xtraDmg;
 		if (hands == 1) {
 			if (light == true && offHandF() == true) {
-				d += (int)modStr * .5;
+				d += (int)name.getMod(0) * .5;
 			}
 			else
-				d += modStr;
+				d += name.getMod(0);
 		}
 		else if (hands == 2)
-			d += ((int)modStr * 1.5);
+			d += ((int)name.getMod(0) * 1.5);
 		int A[5], D[5];
 		//ATTACK ONE vvvv
 		int di = 5, critI = 0;
 		A[0] = AR[0] + a + (smtAttk[0] * pal) + charge;
-		D[0] = DR[0] + d + (smtAttk[0] * modCha) + divSac + (rhinoRush * ((DR[di++] + d) + (smtAttk[0] * modCha))) + //Rhino Rush = DR[5]
-			(spiritChg * ((DR[di++] + d) + (smtAttk[0] * modCha))) + //Spirited Charge = DR[6]
-			(valor * ((DR[di++] + d) + (smtAttk[0] * modCha))); //Valorous = DR[7]
+		D[0] = DR[0] + d + (smtAttk[0] * name.getMod(5)) + divSac + (rhinoRush * ((DR[di++] + d) + (smtAttk[0] * name.getMod(5)))) + //Rhino Rush = DR[5]
+			(spiritChg * ((DR[di++] + d) + (smtAttk[0] * name.getMod(5)))) + //Spirited Charge = DR[6]
+			(valor * ((DR[di++] + d) + (smtAttk[0] * name.getMod(5)))); //Valorous = DR[7]
 		if (AR[0] >= crit) {
 			cc[0] = AR[5] + a + (smtAttk[0] * pal) + charge;
 			for (int x = 1; x <= mult - 1; x++) {
-				cd[0] += DR[di] + d + (smtAttk[0] * modCha);
+				cd[0] += DR[di] + d + (smtAttk[0] * name.getMod(5));
 				critR[critI++] = DR[di++];
 			}
 		}
 		if (fullAttk == true) {
 			//ATTACK TWO vvvv
 			A[1] = AR[1] + a + (smtAttk[1] * pal) - 5;
-			D[1] = DR[1] + d + (smtAttk[1] * modCha);
+			D[1] = DR[1] + d + (smtAttk[1] * name.getMod(5));
 			if (AR[1] >= crit) {
 				cc[1] = AR[6] + a + (smtAttk[1] * pal) - 5;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd[1] += DR[di] + d + (smtAttk[1] * modCha);
+					cd[1] += DR[di] + d + (smtAttk[1] * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			//ATTACK THREE vvvv
 			A[2] = AR[2] + a + (smtAttk[2] * pal) - 10;
-			D[2] = DR[2] + d + (smtAttk[2] * modCha);
+			D[2] = DR[2] + d + (smtAttk[2] * name.getMod(5));
 			if (AR[2] >= crit) {
 				cc[2] = AR[7] + a + (smtAttk[2] * pal) - 10;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd[2] += DR[di] + d + (smtAttk[2] * modCha);
+					cd[2] += DR[di] + d + (smtAttk[2] * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			//ATTACK FOUR vvvv
 			A[3] = AR[3] + a + (smtAttk[3] * pal) - 15;
-			D[3] = DR[3] + d + (smtAttk[3] * modCha);
+			D[3] = DR[3] + d + (smtAttk[3] * name.getMod(5));
 			if (AR[3] >= crit) {
 				cc[3] = AR[8] + a + (smtAttk[3] * pal) - 15;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd[3] += DR[di] + d + (smtAttk[3] * modCha);
+					cd[3] += DR[di] + d + (smtAttk[3] * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			if (haste == 1) {
 				//ATTACK HASTE vvvv
 				A[4] = AR[4] + a + (smtAttk[4] * pal);
-				D[4] = DR[4] + d + (smtAttk[4] * modCha);
+				D[4] = DR[4] + d + (smtAttk[4] * name.getMod(5));
 				if (AR[4] >= crit) {
 					cc[4] = AR[9] + a + (smtAttk[4] * pal);
 					for (int x = 1; x <= mult - 1; x++) {
-						cd[4] += DR[di] + d + (smtAttk[4] * modCha);
+						cd[4] += DR[di] + d + (smtAttk[4] * name.getMod(5));
 						critR[critI++] = DR[di++];
 					}
 				}
@@ -1542,14 +1597,14 @@ void swordbow(string dmg = "2d6", int hands = 2, int enh = 1, int crit = 19, int
 				cout << '\n';
 			}
 		}
-		cout << setfill('*') << setw(45) << '\n';
+		cout << setfill('*') << setw(45) << '\n' << setfill(' ');
 		setfill(' ');
 		//ATTACK/DAMAGE OUTPUT EQUATIONS vvvv 
 		cout << "-Attack: " << a << " {";
 		if (bab != 0)
 			cout << bab << "[BAB]";
-		if (modStr != 0)
-			cout << " + " << modStr << "[STR]";
+		if (name.getMod(0) != 0)
+			cout << " + " << name.getMod(0) << "[STR]";
 		if (size != 0)
 			cout << " + " << size << "[SIZE]";
 		if (enh != 0)
@@ -1586,13 +1641,13 @@ void swordbow(string dmg = "2d6", int hands = 2, int enh = 1, int crit = 19, int
 		cout << '\n';
 
 		cout << "-Damage: " << d << " {";
-		if (modStr != 0) {
+		if (name.getMod(0) != 0) {
 			switch (hands) {
 			case 1:
-				cout << modStr;
+				cout << name.getMod(0);
 				break;
 			case 2:
-				cout << ((int)modStr * 1.5);
+				cout << ((int)name.getMod(0) * 1.5);
 				break;
 			}
 			cout << "[STR]";
@@ -1617,23 +1672,23 @@ void swordbow(string dmg = "2d6", int hands = 2, int enh = 1, int crit = 19, int
 
 		cout << "-Cond. DMG Bonuses: ";
 		if (smtAttk[0] != 0)
-			cout << '+' << modCha << "[SMT1]";
+			cout << '+' << name.getMod(5) << "[SMT1]";
 		if (smtAttk[1] != 0)
-			cout << "//" << '+' << modCha << "[SMT2]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT2]";
 		if (smtAttk[2] != 0)
-			cout << "//" << '+' << modCha << "[SMT3]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT3]";
 		if (smtAttk[3] != 0)
-			cout << "//" << '+' << modCha << "[SMT4]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT4]";
 		if (smtAttk[4] != 0)
-			cout << "//" << '+' << modCha << "[SMT-H]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT-H]";
 		if (divSac != 0)
 			cout << "//" << '+' << divSac << "[DivSac]";
 		if (rhinoRush != 0)
-			cout << "//" << '+' << (rhinoRush * ((DR[5] + d) + (smtAttk[0] * modCha))) << "(" << setw(2) << DR[5] << ")[RHINO]";
+			cout << "//" << '+' << (rhinoRush * ((DR[5] + d) + (smtAttk[0] * name.getMod(5)))) << "(" << setw(2) << DR[5] << ")[RHINO]";
 		if (spiritChg != 0)
-			cout << "//" << '+' << (spiritChg * ((DR[6] + d) + (smtAttk[0] * modCha))) << "(" << setw(2) << DR[6] << ")[SprtCHRG]";
+			cout << "//" << '+' << (spiritChg * ((DR[6] + d) + (smtAttk[0] * name.getMod(5)))) << "(" << setw(2) << DR[6] << ")[SprtCHRG]";
 		if (valor != 0)
-			cout << "//" << '+' << (valor * ((DR[7] + d) + (smtAttk[0] * modCha))) << "(" << setw(2) << DR[7] << ")[VALOR]";
+			cout << "//" << '+' << (valor * ((DR[7] + d) + (smtAttk[0] * name.getMod(5)))) << "(" << setw(2) << DR[7] << ")[VALOR]";
 		cout << '\n';
 
 		cout << "-WEAPON DAMAGE: " << damage << '\n';
@@ -1654,7 +1709,7 @@ void swordbow(string dmg = "2d6", int hands = 2, int enh = 1, int crit = 19, int
 		toggle = userInLoop("Attack Again?");
 	}
 }
-void lightmace(string dmg = "1d6", int hands = 1, int enh = 1, int crit = 20, int mult = 2, bool light = true) {
+void lightmace(character& name, string dmg = "1d6", int hands = 1, int enh = 1, int crit = 20, int mult = 2, bool light = true) {
 	bool toggle = true;
 	if (light == true) {
 		hands = 1;
@@ -1664,6 +1719,7 @@ void lightmace(string dmg = "1d6", int hands = 1, int enh = 1, int crit = 20, in
 	}
 	int size = sizeF();
 	while (toggle) {
+		setfill(' ');
 		//ATTACK ROLLS vvvv
 		int AR[25], DR[40];
 		for (int i = 0; i < 25; i++) {
@@ -1707,70 +1763,70 @@ void lightmace(string dmg = "1d6", int hands = 1, int enh = 1, int crit = 20, in
 		int rubicond = rubicondF();
 		int armbands = armbandsF(pwrAttk);
 		int critR[25];
-		int a = bab + modStr + size + enh + flank - pwrAttk + oneMind + divFavor + haste + prayer + xtraAttk;
+		int a = bab + name.getMod(0) + size + enh + flank - pwrAttk + oneMind + divFavor + haste + prayer + xtraAttk;
 		int d = enh + pwrDmg + oneMind + divFavor + prayer + armbands + rubicond + xtraDmg;
 		if (hands == 1) {
 			if (light == true && offHandF() == true) {
-				d += (int)modStr * .5;
+				d += (int)name.getMod(0) * .5;
 			}
 			else
-				d += modStr;
+				d += name.getMod(0);
 		}
 		else if (hands == 2)
-			d += ((int)modStr * 1.5);
+			d += ((int)name.getMod(0) * 1.5);
 		int A[5], D[5];
 		//ATTACK ONE vvvv
 		int di = 5, critI = 0;
 		A[0] = AR[0] + a + (smtAttk[0] * pal) + charge;
-		D[0] = DR[0] + d + (smtAttk[0] * modCha) + divSac + (rhinoRush * ((DR[di++] + d) + (smtAttk[0] * modCha))) + //Rhino Rush = DR[5]
-			(spiritChg * ((DR[di++] + d) + (smtAttk[0] * modCha))) + //Spirited Charge = DR[6]
-			(valor * ((DR[di++] + d) + (smtAttk[0] * modCha))); //Valorous = DR[7]
+		D[0] = DR[0] + d + (smtAttk[0] * name.getMod(5)) + divSac + (rhinoRush * ((DR[di++] + d) + (smtAttk[0] * name.getMod(5)))) + //Rhino Rush = DR[5]
+			(spiritChg * ((DR[di++] + d) + (smtAttk[0] * name.getMod(5)))) + //Spirited Charge = DR[6]
+			(valor * ((DR[di++] + d) + (smtAttk[0] * name.getMod(5)))); //Valorous = DR[7]
 		if (AR[0] >= crit) {
 			cc[0] = AR[5] + a + (smtAttk[0] * pal) + charge;
 			for (int x = 1; x <= mult - 1; x++) {
-				cd[0] += DR[di] + d + (smtAttk[0] * modCha);
+				cd[0] += DR[di] + d + (smtAttk[0] * name.getMod(5));
 				critR[critI++] = DR[di++];
 			}
 		}
 		if (fullAttk == true) {
 			//ATTACK TWO vvvv
 			A[1] = AR[1] + a + (smtAttk[1] * pal) - 5;
-			D[1] = DR[1] + d + (smtAttk[1] * modCha);
+			D[1] = DR[1] + d + (smtAttk[1] * name.getMod(5));
 			if (AR[1] >= crit) {
 				cc[1] = AR[6] + a + (smtAttk[1] * pal) - 5;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd[1] += DR[di] + d + (smtAttk[1] * modCha);
+					cd[1] += DR[di] + d + (smtAttk[1] * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			//ATTACK THREE vvvv
 			A[2] = AR[2] + a + (smtAttk[2] * pal) - 10;
-			D[2] = DR[2] + d + (smtAttk[2] * modCha);
+			D[2] = DR[2] + d + (smtAttk[2] * name.getMod(5));
 			if (AR[2] >= crit) {
 				cc[2] = AR[7] + a + (smtAttk[2] * pal) - 10;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd[2] += DR[di] + d + (smtAttk[2] * modCha);
+					cd[2] += DR[di] + d + (smtAttk[2] * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			//ATTACK FOUR vvvv
 			A[3] = AR[3] + a + (smtAttk[3] * pal) - 15;
-			D[3] = DR[3] + d + (smtAttk[3] * modCha);
+			D[3] = DR[3] + d + (smtAttk[3] * name.getMod(5));
 			if (AR[3] >= crit) {
 				cc[3] = AR[8] + a + (smtAttk[3] * pal) - 15;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd[3] += DR[di] + d + (smtAttk[3] * modCha);
+					cd[3] += DR[di] + d + (smtAttk[3] * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			if (haste == 1) {
 				//ATTACK HASTE vvvv
 				A[4] = AR[4] + a + (smtAttk[4] * pal);
-				D[4] = DR[4] + d + (smtAttk[4] * modCha);
+				D[4] = DR[4] + d + (smtAttk[4] * name.getMod(5));
 				if (AR[4] >= crit) {
 					cc[4] = AR[9] + a + (smtAttk[4] * pal);
 					for (int x = 1; x <= mult - 1; x++) {
-						cd[4] += DR[di] + d + (smtAttk[4] * modCha);
+						cd[4] += DR[di] + d + (smtAttk[4] * name.getMod(5));
 						critR[critI++] = DR[di++];
 					}
 				}
@@ -1857,14 +1913,14 @@ void lightmace(string dmg = "1d6", int hands = 1, int enh = 1, int crit = 20, in
 				cout << '\n';
 			}
 		}
-		cout << setfill('*') << setw(45) << '\n';
+		cout << setfill('*') << setw(45) << '\n' << setfill(' ');
 		setfill(' ');
 		//ATTACK/DAMAGE OUTPUT EQUATIONS vvvv 
 		cout << "-Attack: " << a << " {";
 		if (bab != 0)
 			cout << bab << "[BAB]";
-		if (modStr != 0)
-			cout << " + " << modStr << "[STR]";
+		if (name.getMod(0) != 0)
+			cout << " + " << name.getMod(0) << "[STR]";
 		if (size != 0)
 			cout << " + " << size << "[SIZE]";
 		if (enh != 0)
@@ -1901,13 +1957,13 @@ void lightmace(string dmg = "1d6", int hands = 1, int enh = 1, int crit = 20, in
 		cout << '\n';
 
 		cout << "-Damage: " << d << " {";
-		if (modStr != 0) {
+		if (name.getMod(0) != 0) {
 			switch (hands) {
 			case 1:
-				cout << modStr;
+				cout << name.getMod(0);
 				break;
 			case 2:
-				cout << ((int)modStr * 1.5);
+				cout << ((int)name.getMod(0) * 1.5);
 				break;
 			}
 			cout << "[STR]";
@@ -1932,23 +1988,23 @@ void lightmace(string dmg = "1d6", int hands = 1, int enh = 1, int crit = 20, in
 
 		cout << "-Cond. DMG Bonuses: ";
 		if (smtAttk[0] != 0)
-			cout << '+' << modCha << "[SMT1]";
+			cout << '+' << name.getMod(5) << "[SMT1]";
 		if (smtAttk[1] != 0)
-			cout << "//" << '+' << modCha << "[SMT2]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT2]";
 		if (smtAttk[2] != 0)
-			cout << "//" << '+' << modCha << "[SMT3]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT3]";
 		if (smtAttk[3] != 0)
-			cout << "//" << '+' << modCha << "[SMT4]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT4]";
 		if (smtAttk[4] != 0)
-			cout << "//" << '+' << modCha << "[SMT-H]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT-H]";
 		if (divSac != 0)
 			cout << "//" << '+' << divSac << "[DivSac]";
 		if (rhinoRush != 0)
-			cout << "//" << '+' << (rhinoRush * ((DR[5] + d) + (smtAttk[0] * modCha))) << "(" << setw(2) << DR[5] << ")[RHINO]";
+			cout << "//" << '+' << (rhinoRush * ((DR[5] + d) + (smtAttk[0] * name.getMod(5)))) << "(" << setw(2) << DR[5] << ")[RHINO]";
 		if (spiritChg != 0)
-			cout << "//" << '+' << (spiritChg * ((DR[6] + d) + (smtAttk[0] * modCha))) << "(" << setw(2) << DR[6] << ")[SprtCHRG]";
+			cout << "//" << '+' << (spiritChg * ((DR[6] + d) + (smtAttk[0] * name.getMod(5)))) << "(" << setw(2) << DR[6] << ")[SprtCHRG]";
 		if (valor != 0)
-			cout << "//" << '+' << (valor * ((DR[7] + d) + (smtAttk[0] * modCha))) << "(" << setw(2) << DR[7] << ")[VALOR]";
+			cout << "//" << '+' << (valor * ((DR[7] + d) + (smtAttk[0] * name.getMod(5)))) << "(" << setw(2) << DR[7] << ")[VALOR]";
 		cout << '\n';
 
 		cout << "-WEAPON DAMAGE: " << damage << '\n';
@@ -1969,7 +2025,7 @@ void lightmace(string dmg = "1d6", int hands = 1, int enh = 1, int crit = 20, in
 		toggle = userInLoop("Attack Again?");
 	}
 }
-void melee(int hands = 0, int enh = enhBF(), int crit = critF(), int mult = multF(), bool light = lightWeaponF()) {
+void melee(character& name, int hands = 0, int enh = enhBF(), int crit = critF(), int mult = multF(), bool light = lightWeaponF()) {
 	bool toggle = true;
 	if (light == true)
 		hands = 1;
@@ -2038,68 +2094,68 @@ void melee(int hands = 0, int enh = enhBF(), int crit = critF(), int mult = mult
 		int rubicond = rubicondF();
 		int armbands = armbandsF(pwrAttk);
 		int critR[25];
-		int a = bab + modStr + size + enh + flank - pwrAttk + oneMind + divFavor + haste + prayer + xtraAttk;
+		int a = bab + name.getMod(0) + size + enh + flank - pwrAttk + oneMind + divFavor + haste + prayer + xtraAttk;
 		int d = enh + pwrDmg + oneMind + divFavor + prayer + armbands + rubicond + xtraDmg;
 		if (offHandF() == true)
-			d += (int)modStr * .5;
+			d += (int)name.getMod(0) * .5;
 		else {
 			if (hands == 1)
-				d += modStr;
+				d += name.getMod(0);
 			else if (hands == 2)
-				d += ((int)modStr * 1.5);
+				d += ((int)name.getMod(0) * 1.5);
 		}
 		int A[5], D[5];
 		//ATTACK ONE vvvv
 		int di = 5, critI = 0;
 		A[0] = AR[0] + a + (smtAttk1 * pal) + charge;
-		D[0] = DR[0] + d + (smtAttk1 * modCha) + divSac + (rhinoRush * ((DR[di++] + d) + (smtAttk1 * modCha))) + //Rhino Rush = DR[5]
-			(spiritChg * ((DR[di++] + d) + (smtAttk1 * modCha))); //Spirited Charge = DR[6]
+		D[0] = DR[0] + d + (smtAttk1 * name.getMod(5)) + divSac + (rhinoRush * ((DR[di++] + d) + (smtAttk1 * name.getMod(5)))) + //Rhino Rush = DR[5]
+			(spiritChg * ((DR[di++] + d) + (smtAttk1 * name.getMod(5)))); //Spirited Charge = DR[6]
 		if (AR[0] >= crit) {
 			cc1 = AR[5] + a + (smtAttk1 * pal) + charge;
 			for (int x = 1; x <= mult - 1; x++) {
-				cd1 += DR[di] + d + (smtAttk1 * modCha);
+				cd1 += DR[di] + d + (smtAttk1 * name.getMod(5));
 				critR[critI++] = DR[di++];
 			}
 		}
 		if (fullAttk == true) {
 			//ATTACK TWO vvvv
 			A[1] = AR[1] + a + (smtAttk2 * pal) - 5;
-			D[1] = DR[1] + d + (smtAttk2 * modCha);
+			D[1] = DR[1] + d + (smtAttk2 * name.getMod(5));
 			if (AR[1] >= crit) {
 				cc2 = AR[6] + a + (smtAttk2 * pal) - 5;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd2 += DR[di] + d + (smtAttk2 * modCha);
+					cd2 += DR[di] + d + (smtAttk2 * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			//ATTACK THREE vvvv
 			A[2] = AR[2] + a + (smtAttk3 * pal) - 10;
-			D[2] = DR[2] + d + (smtAttk3 * modCha);
+			D[2] = DR[2] + d + (smtAttk3 * name.getMod(5));
 			if (AR[2] >= crit) {
 				cc3 = AR[7] + a + (smtAttk3 * pal) - 10;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd3 += DR[di] + d + (smtAttk3 * modCha);
+					cd3 += DR[di] + d + (smtAttk3 * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			//ATTACK FOUR vvvv
 			A[3] = AR[3] + a + (smtAttk4 * pal) - 15;
-			D[3] = DR[3] + d + (smtAttk4 * modCha);
+			D[3] = DR[3] + d + (smtAttk4 * name.getMod(5));
 			if (AR[3] >= crit) {
 				cc4 = AR[8] + a + (smtAttk4 * pal) - 15;
 				for (int x = 1; x <= mult - 1; x++) {
-					cd4 += DR[di] + d + (smtAttk4 * modCha);
+					cd4 += DR[di] + d + (smtAttk4 * name.getMod(5));
 					critR[critI++] = DR[di++];
 				}
 			}
 			if (haste == 1) {
 				//ATTACK HASTE vvvv
 				A[4] = AR[4] + a + (smtAttkH * pal);
-				D[4] = DR[4] + d + (smtAttkH * modCha);
+				D[4] = DR[4] + d + (smtAttkH * name.getMod(5));
 				if (AR[4] >= crit) {
 					ccH = AR[9] + a + (smtAttkH * pal);
 					for (int x = 1; x <= mult - 1; x++) {
-						cdH += DR[di] + d + (smtAttkH * modCha);
+						cdH += DR[di] + d + (smtAttkH * name.getMod(5));
 						critR[critI++] = DR[di++];
 					}
 				}
@@ -2186,14 +2242,14 @@ void melee(int hands = 0, int enh = enhBF(), int crit = critF(), int mult = mult
 				cout << '\n';
 			}
 		}
-		cout << setfill('*') << setw(45) << '\n';
+		cout << setfill('*') << setw(45) << '\n' << setfill(' ');
 		setfill(' ');
 		//ATTACK/DAMAGE OUTPUT EQUATIONS vvvv 
 		cout << "-Attack: " << a << " {";
 		if (bab != 0)
 			cout << bab << "[BAB]";
-		if (modStr != 0)
-			cout << " + " << modStr << "[STR]";
+		if (name.getMod(0) != 0)
+			cout << " + " << name.getMod(0) << "[STR]";
 		if (size != 0)
 			cout << " + " << size << "[SIZE]";
 		if (enh != 0)
@@ -2230,13 +2286,13 @@ void melee(int hands = 0, int enh = enhBF(), int crit = critF(), int mult = mult
 		cout << '\n';
 
 		cout << "-Damage: " << d << " {";
-		if (modStr != 0) {
+		if (name.getMod(0) != 0) {
 			switch (hands) {
 			case 1:
-				cout << modStr;
+				cout << name.getMod(0);
 				break;
 			case 2:
-				cout << ((int)modStr * 1.5);
+				cout << ((int)name.getMod(0) * 1.5);
 				break;
 			}
 			cout << "[STR]";
@@ -2261,21 +2317,21 @@ void melee(int hands = 0, int enh = enhBF(), int crit = critF(), int mult = mult
 
 		cout << "-Cond. DMG Bonuses: ";
 		if (smtAttk1 != 0)
-			cout << '+' << modCha << "[SMT1]";
+			cout << '+' << name.getMod(5) << "[SMT1]";
 		if (smtAttk2 != 0)
-			cout << "//" << '+' << modCha << "[SMT2]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT2]";
 		if (smtAttk3 != 0)
-			cout << "//" << '+' << modCha << "[SMT3]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT3]";
 		if (smtAttk4 != 0)
-			cout << "//" << '+' << modCha << "[SMT4]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT4]";
 		if (smtAttkH != 0)
-			cout << "//" << '+' << modCha << "[SMT-H]";
+			cout << "//" << '+' << name.getMod(5) << "[SMT-H]";
 		if (divSac != 0)
 			cout << "//" << '+' << divSac << "[DivSac]";
 		if (rhinoRush != 0)
-			cout << "//" << '+' << (rhinoRush * ((DR[5] + d) + (smtAttk1 * modCha))) << "(" << setw(2) << DR[5] << ")[RHINO]";
+			cout << "//" << '+' << (rhinoRush * ((DR[5] + d) + (smtAttk1 * name.getMod(5)))) << "(" << setw(2) << DR[5] << ")[RHINO]";
 		if (spiritChg != 0)
-			cout << "//" << '+' << (spiritChg * ((DR[6] + d) + (smtAttk1 * modCha))) << "(" << setw(2) << DR[6] << ")[SprtCHRG]";
+			cout << "//" << '+' << (spiritChg * ((DR[6] + d) + (smtAttk1 * name.getMod(5)))) << "(" << setw(2) << DR[6] << ")[SprtCHRG]";
 		cout << '\n';
 
 		cout << "-WEAPON DAMAGE: " << n << 'd' << s << '\n';
@@ -2326,22 +2382,22 @@ int mainMenu() {
 	else if (choice == "5")
 		return 5;
 }
-bool weapons(int choice) {
+bool weapons(character& name, int choice) {
 	switch (choice) {
 	case 1:
-		sharrash();
+		sharrash(name);
 		break;
 	case 2:
-		waraxe();
+		waraxe(name);
 		break;
 	case 3:
-		swordbow();
+		swordbow(name);
 		break;
 	case 4:
-		lightmace();
+		lightmace(name);
 		break;
 	case 5:
-		melee();
+		melee(name);
 		break;
 	case 0:
 	default:
@@ -2352,15 +2408,15 @@ bool weapons(int choice) {
 int attacks(int attacks = 5) {
 	int y;
 	while (true) {
-	cout << "Which weapon would you like to attack with?\n";
-	cout << "1 - (+2) TALENTA SHARRASH\n";
-	cout << "2 - (+2) ADAMANTINE WARAXE\n";
-	cout << "3 - (+1) GREAT (SWORD)BOW\n";
-	cout << "4 - (+1) LIGHT MACE\n";
-	cout << "5 - MISC MELEE\n";
-	cout << "Leave blank and press enter to return to previous screen\n";
-	string userIn;
-	int x;
+		cout << "Which weapon would you like to attack with?\n";
+		cout << "1 - (+2) TALENTA SHARRASH\n";
+		cout << "2 - (+2) ADAMANTINE WARAXE\n";
+		cout << "3 - (+1) GREAT (SWORD)BOW\n";
+		cout << "4 - (+1) LIGHT MACE\n";
+		cout << "5 - MISC MELEE\n";
+		cout << "Leave blank and press enter to return to previous screen\n";
+		string userIn;
+		int x;
 		getline(cin, userIn);
 		if (userIn == "" || userIn == "0")
 			return 0;
@@ -2379,6 +2435,9 @@ int attacks(int attacks = 5) {
 
 int main()
 {
+	character hero[5];
+	statGen(hero[0]);
+
 	srand(GetTickCount64());
 	while (true) {
 		int menu;
@@ -2388,8 +2447,18 @@ int main()
 			bool weaponScreen;
 			weaponScreen = true;
 			while (weaponScreen) {
-				weaponScreen = weapons(attacks());
+				weaponScreen = weapons(hero[0], attacks());
 			}
 		}
 	}
+	//while (true) {
+	//	//for (int i = 0; i < 16; i++) {
+	//	//	cout << hero[0].stat[0][i] << '\n';
+	//	//		/*<< '-' << hero[0].statmod[i] << '\n';*/
+	//	//}
+	//	for (int i = 0; i < 6; i++) {
+	//		cout << hero[0].getStat(i) << '-' << hero[0].getMod(i) << '\n';
+	//	}
+	//	system("pause");
+	//}
 }
